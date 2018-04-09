@@ -1,0 +1,31 @@
+---
+- hosts: wsi-setup
+  vars:
+    hostname: some.fqdn.com
+    new_password: DesiredPassword
+    
+  tasks:    
+  - name: set desired hostname
+    hostname:
+      name: "{{ hostname }}"
+
+  - name: update password
+    user:
+      name: "{{ ansible_user }}"
+      update_password: always
+      password: "{{ new_password|password_hash('sha512') }}"
+      
+  - name: remove login records
+    shell: echo > /var/log/{{ item }}
+    with_items:
+      - wtmp
+      - btmp
+      - lastlog
+      
+  - name: Reboot server
+    shell: sleep 2 && shutdown -r now
+    async: 1
+    poll: 0
+  
+  - name: Wait gracefully for reboot
+    local_action: wait_for host={{ ansible_ssh_host }} port=22 delay=10 state=started

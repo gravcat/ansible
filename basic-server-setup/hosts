@@ -1,0 +1,2 @@
+[wsi-setup]
+inserthost    ansible_user=insertuser  ansible_ssh_pass=insertpass
